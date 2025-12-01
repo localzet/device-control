@@ -1,0 +1,61 @@
+# Dependencies
+node_modules/
+vendor/
+composer.lock
+package-lock.json
+
+# Build outputs
+dist/
+build/
+*.apk
+*.apk.idsig
+*.s.apk
+*.jks
+*.pk8
+
+# Data files
+clientData/
+maindb.json
+*.json.bak
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Backup
+backup/
+
+# Temporary
+tmp/
+temp/
+*.tmp
+
+# Android build
+app/factory/decompiled/build/
+app/factory/decompiled/original/
+app/factory/testkey.*
+
+# Downloads
+assets/webpublic/client_downloads/*
+
+# Docker
+docker-compose.override.yml
+

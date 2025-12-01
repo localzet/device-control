@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  server:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: device-control-server
+    restart: unless-stopped
+    ports:
+      - "22533:22533"  # Web interface
+      - "22222:22222"  # Socket.IO
+    volumes:
+      - ../data:/app/data
+      - ../clientData:/app/clientData
+      - ../assets/webpublic/client_downloads:/app/assets/webpublic/client_downloads
+    environment:
+      - NODE_ENV=production
+    networks:
+      - device-control-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:22533/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+networks:
+  device-control-network:
+    driver: bridge
+

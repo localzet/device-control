@@ -1,0 +1,17 @@
+{
+    "name": "rust/android-manage",
+    "type": "project",
+    "require": {
+        "localzet/socket": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Rust\\AndroidManage\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Rust"
+        }
+    ]
+}

