@@ -12,6 +12,14 @@ Device Control is a comprehensive platform for remote management, monitoring, an
 - 🐳 **Docker Ready** - Easy deployment with Docker Compose
 - 📊 **Comprehensive Monitoring** - Device tracking, SMS monitoring, GPS location, file management, contacts, and more
 
+### Use Cases
+
+- Enterprise device fleet management
+- Corporate asset tracking and monitoring
+- Employee device compliance monitoring
+- Lost or stolen device recovery
+- Remote device administration and support
+
 ### Quick Start
 
 #### Using Docker (Recommended)
@@ -53,22 +61,4 @@ node index.js
 - Node.js 18+
 - Java 17+ (for APK building)
 - Android SDK (optional, for APK signing)
-
-### License
-
-MIT License - see [LICENSE](LICENSE) file
-
-### Author
-
-**localzet**
-
----
-
-## Use Cases
-
-- Enterprise device fleet management
-- Corporate asset tracking and monitoring
-- Employee device compliance monitoring
-- Lost or stolen device recovery
-- Remote device administration and support
 
