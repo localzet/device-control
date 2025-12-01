@@ -35,7 +35,7 @@ node index.js
 - [Installation Guide](docs/installation.md)
 - [Quick Start](docs/quick-start.md)
 - [Server Setup](docs/server.md)
-- [APK Building](docs/app-factory/)
+- [APK Building](docs/app-factory.md)
 - [Docker Deployment](docker/README.md)
 - [Roadmap](docs/ROADMAP.md)
 
